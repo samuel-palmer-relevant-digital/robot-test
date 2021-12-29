@@ -1,155 +1,161 @@
 import microbit as mb
-p=0
-g=1
-P=2
-r=1
-U=2
-def set_pin(O,e):
- if O.read_digital()!=e:
-  O.write_digital(e)
-def flytta(i,m):
- if i==g or i==P:
-  if mb.pin8.read_digital():
-   if i==g:
-    set_pin(mb.pin13,1)
-    set_pin(mb.pin14,0)
-   else:
-    set_pin(mb.pin13,0)
-    set_pin(mb.pin14,1)
- else:
-  set_pin(mb.pin13,0)
-  set_pin(mb.pin14,0)
- if m==r:
-  set_pin(mb.pin15,0)
-  set_pin(mb.pin16,1)
- elif m==U:
-  set_pin(mb.pin15,1)
-  set_pin(mb.pin16,0)
- else:
-  set_pin(mb.pin15,0)
-  set_pin(mb.pin16,0)
-v=[]
-class Öga:
- def __init__(X,O,Y):
-  X.pin=O
-  X.sida=Y
-  X.mest=0
-  X.minst=1023
-  X.senast=0
-  X.förändring=0
-  X.boost=0
-  X.dold_ökning=0
-  X.dold_multi=1
-  if Y==r:
-   X.andra_sidan=U
-  else:
-   X.andra_sidan=r
-  X.uppdatera_värde()
- def andra_ögat(X):
-  return v[1]if X.sida==r else v[0]
- def uppdatera_värde(X):
-  X.senast=max(X.pin.read_analog(),1)
-  X.mest=max(X.mest,X.senast)
-  X.minst=min(X.minst,X.senast)
-  X.boost=X.senast-X.minst
-  X.dold_multi=X.senast/X.minst
- def uppdatera(X):
-  D=X.senast
-  X.uppdatera_värde()
-  X.förändring=X.senast-D
-  if X.förändring>0:
-   X.dold_ökning=X.förändring/D
-  else:
-   X.dold_ökning=0
-o=Öga(mb.pin1,r)
-x=Öga(mb.pin2,U)
-v=[o,x]
-d=0.05
-k=3 
-S=1.2 
-W=1000
-def hitta_mest_dolda():
- N=max(o.dold_multi,x.dold_multi)
- t=max(o.senast,x.senast)
- j=min(o.senast,x.senast)
- if max(t,1)/max(j,1)<S and N<k:
-  return None
- return o if o.senast>x.senast else x
+y=0
+s=1
+r=2
+z=1
+w=2
 class Inställningar:
- def __init__(X):
-  X.riktning=p
-  X.sväng=p
- def sätt(X,i,m):
-  X.riktning=i
-  X.sväng=m
- def sätt_från_annan(X,b):
-  X.sätt(b.riktning,b.sväng)
- def är_samma(X,b):
-  return X.riktning==b.riktning and X.sväng==b.sväng
- def bild(X):
-  if X.sväng==r:
+ def __init__(a):
+  a.riktning=y
+  a.sväng=y
+ def sätt(a,I,E):
+  a.riktning=I
+  a.sväng=E
+ def sätt_från_annan(a,A):
+  a.sätt(A.riktning,A.sväng)
+ def är_samma(a,A):
+  return a.riktning==A.riktning and a.sväng==A.sväng
+ def bild(a):
+  if a.sväng==z:
    return mb.Image.ARROW_W
-  if X.sväng==U:
+  if a.sväng==w:
    return mb.Image.ARROW_E
   return mb.Image.HEART
+def sp(m,d):
+ if m.read_digital()!=d:
+  m.write_digital(d)
+def motsatt_sida(E):
+ return w if E==z else w
+K=Inställningar()
+def flytta(ins):
+ K.sätt_från_annan(ins)
+ if ins.riktning==s:
+  sp(mb.pin13,1)
+  sp(mb.pin14,0)
+ elif ins.riktning==r:
+  sp(mb.pin13,0)
+  sp(mb.pin14,1)
+ else:
+  sp(mb.pin13,0)
+  sp(mb.pin14,0)
+ if ins.sväng==z:
+  sp(mb.pin15,0)
+  sp(mb.pin16,1)
+ elif ins.sväng==w:
+  sp(mb.pin15,1)
+  sp(mb.pin16,0)
+ else:
+  sp(mb.pin15,0)
+  sp(mb.pin16,0)
+class Öga:
+ def __init__(a,m,u):
+  a.pin=m
+  a.sida=u
+  a.minst=1023
+  a.senast=0
+  a.dold_multi=1
+  a.uppdatera()
+ def uppdatera(a):
+  a.senast=max(a.pin.read_analog(),1)
+  a.minst=min(a.minst,a.senast)
+  a.dold_multi=a.senast/a.minst
+R=Öga(mb.pin1,z)
+b=Öga(mb.pin2,w)
+O=0.05
+U=3 
+c=1.2 
+e=1000
+x=1.2
+o=300
+C=2000
+def hitta_mest_dolda():
+ T=max(R.dold_multi,b.dold_multi)
+ F=max(R.senast,b.senast)
+ N=min(R.senast,b.senast)
+ if max(F,1)/max(N,1)<c and T<U:
+  return None
+ return R if R.senast>b.senast else b
 class KraschHanterare:
- def __init__(X):
-  X.arr=[]
-  X.in_slot=0;
- def uppdatera(X,tid):
-  e=mb.accelerometer.get_y()
-  if len(X.arr)!=0 and X.arr[-1][1]//100==tid//100:
-   X.arr[-1]=((X.arr[-1][0]*X.in_slot+e)/(X.in_slot+1),tid)
+ def __init__(a):
+  a.arr=[]
+  a.in_slot=0
+  a.minimum=-1
+  a.kraschar=False
+ def reset(a):
+  a.arr.clear()
+  a.in_slot=0
+  a.minimum=-1
+  a.kraschar=False
+ def uppdatera(a,tid):
+  if K.riktning!=s or K.sväng!=y: 
+   a.reset()
    return
-  X.arr.append((e,tid))
-  while tid-X.arr[0][1]>W:
-   X.arr.pop(0)
- def genomsnitt(X):
-  q=0
-  for _,G in enumerate(X.arr):
-   q+=G[0]
-  return q/len(X.arr)
- def krashar(X):
-  return False
-def sätt_pixlar(hur_många):
- for n in range(25):
-  mb.display.set_pixel(n%5,n//5,9 if n<hur_många else 0)
+  d=abs(mb.accelerometer.get_z())
+  if len(a.arr)!=0 and a.arr[-1][1]//100==tid//100:
+   a.arr[-1]=((a.arr[-1][0]*a.in_slot+d)/(a.in_slot+1),tid)
+   return
+  a.arr.append((d,tid))
+  a.in_slot=1
+  i=False
+  while tid-a.arr[0][1]>e:
+   a.arr.pop(0)
+   i=True
+  if not i:
+   return
+  nu=a.genomsnitt()
+  a.minimum=nu if a.minimum==-1 else min(nu,a.minimum)
+  if nu/max(a.minimum,1)>x:
+   a.kraschar=True
+ def genomsnitt(a):
+  t=0
+  for _,S in enumerate(a.arr):
+   t+=S[0]
+  return t/len(a.arr)
 def hummux():
- w=False
+ h=False
  mb.pin12.write_digital(1)
- u=0
- Q=Inställningar()
- f=Inställningar()
- H=False
- V=KraschHanterare()
+ l=0
+ L=Inställningar()
+ W=Inställningar()
+ P=False
+ X=o
+ Y=w
+ G=KraschHanterare()
  while True:
   if mb.button_a.was_pressed():
-   w=not w
-   H=False
+   h=not h
+   P=False
   if mb.button_b.was_pressed():
-   w=not w
-   H=True
-  if not w:
+   h=not h
+   P=True
+  if not h:
    mb.display.show(mb.Image.SAD)
-   flytta(p,p)
-   u=0
+   L.sätt(y,y)
+   flytta(L)
+   l=0
+   X=o
+   G.reset()
    continue
-  C=mb.running_time()
-  o.uppdatera()
-  x.uppdatera()
-  m=p
-  i=g
-  n=hitta_mest_dolda()
-  V.uppdatera(C)
-  if n is not None:
-   m=n.andra_sidan
-  f.sätt(i,m)
-  if f.är_samma(Q):
-   if C-u>300:
-    if not H:
-     flytta(f.riktning,f.sväng)
+  g=mb.running_time()
+  R.uppdatera()
+  b.uppdatera()
+  W.sätt(s,y)
+  j=hitta_mest_dolda()
+  G.uppdatera(g)
+  if j is not None:
+   W.sväng=motsatt_sida(j.sida)
+  if G.kraschar:
+   W.sätt(r,Y)
+   L.sätt_från_annan(W)
+   l=0
+   X=C
+   Y=motsatt_sida(Y) 
+  if W.är_samma(L):
+   if g-l>X:
+    if not P:
+     flytta(W)
+    mb.display.show(W.bild())
   else:
-   u=C
-   Q.sätt_från_annan(f)
+   l=g
+   L.sätt_från_annan(W)
 hummux()
-# Created by pyminifier (https://github.com/liftoff/pyminifier)
